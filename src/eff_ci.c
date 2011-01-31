@@ -18,7 +18,7 @@
  * 
  * Calculate the shortest central confidence interval containing the required
  * probability content.
- * Interval(low) returns the length of the interval starting at low
+ * interval(low) returns the length of the interval starting at low
  * that contains conflevel probability. We use Brent's method,
  * except in two special cases: when k=0, or when k=N
  * Main driver routine
@@ -49,7 +49,7 @@ efficiency_ci(int k, int N, double conflevel, double& mode, double& low, double&
     GLOBAL_N = N;
     CONFLEVEL = conflevel;
     Brent(0.0, 0.5, 1.0, 1.0e-9, &low);
-    high = low + Interval(low);
+    high = low + interval(low);
   }
 
   return;
@@ -131,4 +131,19 @@ search_lower(double high, int k, int N, double c)
   return test;
 }
 
+
+double
+interval(double low)
+{
+  double high;
+  /* Return the length of the interval starting at low
+   * that contains CONFLEVEL of the x^GLOBAL_k*(1-x)^(GLOBAL_N-GLOBAL_k)
+   * distribution.
+   * If there is no sufficient interval starting at low, we return 2.0
+   */
+
+  high = SearchUpper(low, GLOBAL_k, GLOBAL_N, CONFLEVEL);
+  if (high == -1.0) return 2.0; //  so that this won't be the shortest interval
+  return (high - low);
+}
 
