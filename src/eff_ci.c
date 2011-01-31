@@ -1,4 +1,5 @@
 #include "eff_ci.h"
+#include <math.h>
 
 /*
  * The code in this file is based on the code in ROOT's
@@ -12,6 +13,9 @@
  * Marc Paterno (paterno@fnal.gov)
  * FNAL/CD
  */
+
+
+#define MYSIGN(a,b) ((b >= 0) ? fabs(a) : -fabs(a))
 
 /* Based on Root's TGraphAsymmErrors::Efficiency function. That function
  * lists the following information:
@@ -147,3 +151,81 @@ interval(double low)
   return (high - low);
 }
 
+
+double
+brent(double ax, double bx, double cx, double tol, double *xmin)
+{
+  int iter;
+  double a,b,d=0.,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
+  double e=0.0;
+
+  const int    kITMAX = 100;
+  const double kCGOLD = 0.3819660;
+  const double kZEPS  = 1.0e-10;
+
+  /* Implementation file for the numerical equation solver library.
+   * This includes root finding and minimum finding algorithms.
+   * Adapted from Numerical Recipes in C, 2nd edition.
+   * Translated to C++ by Marc Paterno
+   * Translated back to C by Steffen Mueller (shame on him for
+   * not going back to the original NR sources...)
+   */
+
+  a=(ax < cx ? ax : cx);
+  b=(ax > cx ? ax : cx);
+  x=w=v=bx;
+  fw=fv=fx=interval(x);
+  for (iter=1;iter<=kITMAX;iter++) {
+    xm=0.5*(a+b);
+    tol2=2.0*(tol1=tol*fabs(x)+kZEPS);
+    if (fabs(x-xm) <= (tol2-0.5*(b-a))) {
+      *xmin=x;
+      return fx;
+    }
+    if (fabs(e) > tol1) {
+      r=(x-w)*(fx-fv);
+      q=(x-v)*(fx-fw);
+      p=(x-v)*q-(x-w)*r;
+      q=2.0*(q-r);
+      if (q > 0.0) p = -p;
+      q=fabs(q);
+      etemp=e;
+      e=d;
+      if (fabs(p) >= fabs(0.5*q*etemp) || p <= q*(a-x) || p >= q*(b-x)) d=kCGOLD*(e=(x >= xm ? a-x : b-x));
+      else {
+        d=p/q;
+        u=x+d;
+        if (u-a < tol2 || b-u < tol2) d=MYSIGN(tol1,xm-x);
+      }
+    } else {
+      d=kCGOLD*(e=(x >= xm ? a-x : b-x));
+    }
+    u=(fabs(d) >= tol1 ? x+d : x+MYSIGN(tol1,d));
+    fu=interval(u);
+    if (fu <= fx) {
+      if (u >= x) a=x; else b=x;
+      v  = w;
+      w  = x;
+      x  = u;
+      fv = fw;
+      fw = fx;
+      fx = fu;
+    } else {
+      if (u < x) a=u; else b=u;
+      if (fu <= fw || w == x) {
+        v=w;
+        w=u;
+        fv=fw;
+        fw=fu;
+      } else if (fu <= fv || v == x || v == w) {
+        v=u;
+        fv=fu;
+      }
+    }
+  }
+  printf("%s", "Brent: Too many interations\n");
+  *xmin=x;
+  return fx;
+}
+
+#undef MYSIGN
