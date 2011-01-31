@@ -1,4 +1,5 @@
 #include "math.h"
+#include "stdio.h"
 
 #define MY_kDBL_MAX (1.79769e+308)
 #define MY_kMAXLGM (2.556348e305)
@@ -162,6 +163,88 @@ polynomial_1eval(double x, double* a, unsigned int N)
   }
 }
 
+
+double
+beta_ab(double a, double b, int k, int N)
+{
+  int c1, c2;
+  /* Calculates the fraction of the area under the
+   * curve x^k*(1-x)^(N-k) between x=a and x=b */
+
+  if (a == b) return 0;    /* don't bother integrating over zero range */
+  c1 = k+1;
+  c2 = N-k+1;
+  return Ibetai(c1,c2,b)-Ibetai(c1,c2,a);
+}
+
+double
+ibetai(double a, double b, double x)
+{
+  /* Calculates the incomplete beta function  I_x(a,b); this is
+   * the incomplete beta function divided by the complete beta function */
+
+  double bt;
+  if (x < 0.0 || x > 1.0) {
+    Error("Ibetai","Illegal x in routine Ibetai: x = %g",x);
+    return 0;
+  }
+  if (x == 0.0 || x == 1.0)
+    bt=0.0;
+  else
+    bt=exp(log_gamma(a+b)-log_gamma(a)-log_gamma(b)+a*log(x)+b*log(1.0-x));
+
+  if (x < (a+1.0)/(a+b+2.0))
+    return bt*beta_cf(x,a,b)/a;
+  else
+    return 1.0-bt*beta_cf(1-x,b,a)/b;
+}
+
+
+double beta_cf(double x, double a, double b)
+{
+  /* Continued fraction evaluation by modified Lentz's method
+   * used in calculation of incomplete Beta function. */
+
+  const int itmax = 500;
+  const double eps = 3.e-14;
+  const double fpmin = 1.e-30;
+
+  int m, m2;
+  double aa, c, d, del, qab, qam, qap;
+  double h;
+  qab = a+b;
+  qap = a+1.0;
+  qam = a-1.0;
+  c = 1.0;
+  d = 1.0 - qab*x/qap;
+  if (fabs(d)<fpmin) d=fpmin;
+  d=1.0/d;
+  h=d;
+  for (m=1; m<=itmax; m++) {
+    m2=m*2;
+    aa = m*(b-m)*x/((qam+ m2)*(a+m2));
+    d = 1.0 +aa*d;
+    if(fabs(d)<fpmin) d = fpmin;
+    c = 1 +aa/c;
+    if (fabs(c)<fpmin) c = fpmin;
+    d=1.0/d;
+    h*=d*c;
+    aa = -(a+m)*(qab +m)*x/((a+m2)*(qap+m2));
+    d=1.0+aa*d;
+    if(fabs(d)<fpmin) d = fpmin;
+    c = 1.0 +aa/c;
+    if (fabs(c)<fpmin) c = fpmin;
+    d=1.0/d;
+    del = d*c;
+    h*=del;
+    if (fabs(del-1)<=eps) break;
+  }
+  if (m>itmax) {
+    printf("beta_cf", "a or b too big, or itmax too small, a=%g, b=%g, x=%g, h=%g, itmax=%d",
+        a,b,x,h,itmax);
+  }
+  return h;
+}
 
 
 #undef MY_kDBL_MAX

@@ -52,7 +52,7 @@ efficiency_ci(int k, int N, double conflevel, double& mode, double& low, double&
     GLOBAL_k = k;
     GLOBAL_N = N;
     CONFLEVEL = conflevel;
-    Brent(0.0, 0.5, 1.0, 1.0e-9, &low);
+    brent(0.0, 0.5, 1.0, 1.0e-9, &low);
     high = low + interval(low);
   }
 
@@ -76,7 +76,7 @@ search_upper(double low, int k, int N, double c)
    * to the maximum upper limit (1) is greater than c
    */
 
-  integral = Beta_ab(low, 1.0, k, N);
+  integral = beta_ab(low, 1.0, k, N);
   if (integral == c) return 1.0;    /* lucky -- this is the solution */
   if (integral < c) return -1.0;    /* no solution exists */
   too_high = 1.0;            /* upper edge estimate */
@@ -90,7 +90,7 @@ search_upper(double low, int k, int N, double c)
 
   for (loop=0; loop<50; loop++) {
     test = 0.5*(too_low + too_high);
-    integral = Beta_ab(low, test, k, N);
+    integral = beta_ab(low, test, k, N);
     if (integral > c)  too_high = test;
     else too_low = test;
     if (fabs(integral - c) <= 1.E-15) break;
@@ -112,7 +112,7 @@ search_lower(double high, int k, int N, double c)
    * check to see if there is any solution by verifying that the integral down
    * to the minimum lower limit (0) is greater than c */
 
-  double integral = Beta_ab(0.0, high, k, N);
+  double integral = beta_ab(0.0, high, k, N);
   if (integral == c) return 0.0;      /* lucky -- this is the solution */
   if (integral < c) return -1.0;      /* no solution exists */
   double too_low = 0.0;               /* lower edge estimate */
@@ -127,7 +127,7 @@ search_lower(double high, int k, int N, double c)
 
   for (loop=0; loop<50; loop++) {
     test = 0.5*(too_high + too_low);
-    integral = Beta_ab(test, high, k, N);
+    integral = beta_ab(test, high, k, N);
     if (integral > c)  too_low = test;
     else too_high = test;
     if (fabs(integral - c) <= 1.E-15) break;
@@ -146,7 +146,7 @@ interval(double low)
    * If there is no sufficient interval starting at low, we return 2.0
    */
 
-  high = SearchUpper(low, GLOBAL_k, GLOBAL_N, CONFLEVEL);
+  high = search_upper(low, GLOBAL_k, GLOBAL_N, CONFLEVEL);
   if (high == -1.0) return 2.0; //  so that this won't be the shortest interval
   return (high - low);
 }
@@ -223,7 +223,7 @@ brent(double ax, double bx, double cx, double tol, double *xmin)
       }
     }
   }
-  printf("%s", "Brent: Too many interations\n");
+  printf("%s", "brent: Too many interations\n");
   *xmin=x;
   return fx;
 }
