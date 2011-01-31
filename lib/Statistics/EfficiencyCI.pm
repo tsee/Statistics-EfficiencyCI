@@ -7,9 +7,12 @@ use warnings;
 our $VERSION = '0.01';
 
 require Exporter;
+our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
   efficiency_ci
 );
+our @EXPORT_TAGS = ('all' => \@EXPORT_OK);
+
 require XSLoader;
 XSLoader::load('Statistics::EfficiencyCI', $VERSION);
 
