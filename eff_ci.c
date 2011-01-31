@@ -30,31 +30,31 @@
  * Author: Marc Paterno
  */
 void
-efficiency_ci(int k, int N, double conflevel, double& mode, double& low, double& high)
+efficiency_ci(int k, int N, double conflevel, double* mode, double* low, double* high)
 {
   /* If there are no entries, then we know nothing, thus return the prior... */
   if (0==N) {
-    mode = .5; low = 0.0; high = 1.0;
+    *mode = .5; *low = 0.0; *high = 1.0;
     return;
   }
 
   /* Calculate the most probable value for the posterior cross section.
    * This is easy, 'cause it is just k/N
    */
-  mode = (double)k/N;
+  *mode = (double)k/N;
 
   if (k == 0) {
-    low = 0.0;
-    high = search_upper(low, k, N, conflevel);
+    *low = 0.0;
+    *high = search_upper(*low, k, N, conflevel);
   } else if (k == N) {
-    high = 1.0;
-    low = search_lower(high, k, N, conflevel);
+    *high = 1.0;
+    *low = search_lower(*high, k, N, conflevel);
   } else {
     GLOBAL_k = k;
     GLOBAL_N = N;
     CONFLEVEL = conflevel;
-    brent(0.0, 0.5, 1.0, 1.0e-9, &low);
-    high = low + interval(low);
+    brent(0.0, 0.5, 1.0, 1.0e-9, low);
+    *high = *low + interval(*low);
   }
 
   return;

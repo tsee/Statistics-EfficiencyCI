@@ -1,5 +1,6 @@
 #include "eff_math_fun.h"
-#include "stdio.h"
+#include <stdio.h>
+#include <math.h>
 
 #define MY_kDBL_MAX (1.79769e+308)
 #define MY_kMAXLGM (2.556348e305)
@@ -10,7 +11,7 @@
  * B[], C[]: log gamma function between 2 and 3
  */
 
-static double A[] = {
+static double A[5] = {
    8.11614167470508450300E-4,
    -5.95061904284301438324E-4,
    7.93650340457716943945E-4,
@@ -18,7 +19,7 @@ static double A[] = {
    8.33333333333331927722E-2
 };
 
-static double B[] = {
+static double B[6] = {
    -1.37825152569120859100E3,
    -3.88016315134637840924E4,
    -3.31612992738871184744E5,
@@ -27,7 +28,7 @@ static double B[] = {
    -8.53555664245765465627E5
 };
 
-static double C[] = {
+static double C[6] = {
 /* 1.00000000000000000000E0, */
    -3.51815701436523470549E2,
    -1.70642106651881159223E4,
@@ -66,10 +67,10 @@ log_gamma(double x)
       p += 1.0;
       z = p - q;
     }
-    z = q * sin( kPI * z );
+    z = q * sin( M_PI * z );
     if( z == 0 )
       return(MY_kDBL_MAX);
-    z = log(kPI) - log( z ) - w;
+    z = log(M_PI) - log( z ) - w;
     return( z );
   }
 
@@ -174,7 +175,7 @@ beta_ab(double a, double b, int k, int N)
   if (a == b) return 0;    /* don't bother integrating over zero range */
   c1 = k+1;
   c2 = N-k+1;
-  return Ibetai(c1,c2,b)-Ibetai(c1,c2,a);
+  return ibetai(c1,c2,b)-ibetai(c1,c2,a);
 }
 
 double
@@ -185,7 +186,7 @@ ibetai(double a, double b, double x)
 
   double bt;
   if (x < 0.0 || x > 1.0) {
-    Error("Ibetai","Illegal x in routine Ibetai: x = %g",x);
+    printf("ibetai: Illegal x in routine ibetai: x = %g",x);
     return 0;
   }
   if (x == 0.0 || x == 1.0)
