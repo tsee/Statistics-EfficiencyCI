@@ -1,5 +1,6 @@
 #include "eff_ci.h"
 #include <math.h>
+#include <eff_math_fun.h>
 
 /*
  * The code in this file is based on the code in ROOT's

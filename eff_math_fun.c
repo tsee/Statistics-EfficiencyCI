@@ -1,4 +1,4 @@
-#include "math.h"
+#include "eff_math_fun.h"
 #include "stdio.h"
 
 #define MY_kDBL_MAX (1.79769e+308)

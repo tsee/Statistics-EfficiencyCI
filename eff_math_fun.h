@@ -1,5 +1,5 @@
-#ifndef __math_h_
-#define __math_h_
+#ifndef __eff_math_fun_h_
+#define __eff_math_fun_h_
 
 double log_gamma(double x);
 double beta_ab(double a, double b, int k, int N);
