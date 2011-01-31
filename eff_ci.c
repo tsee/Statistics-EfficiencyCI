@@ -50,11 +50,8 @@ efficiency_ci(int k, int N, double conflevel, double* mode, double* low, double*
     *high = 1.0;
     *low = search_lower(*high, k, N, conflevel);
   } else {
-    GLOBAL_k = k;
-    GLOBAL_N = N;
-    CONFLEVEL = conflevel;
-    brent(0.0, 0.5, 1.0, 1.0e-9, low);
-    *high = *low + interval(*low);
+    brent(0.0, 0.5, 1.0, 1.0e-9, low, k, N, conflevel);
+    *high = *low + interval(*low, k, N, conflevel);
   }
 
   return;
@@ -66,7 +63,7 @@ double
 search_upper(double low, int k, int N, double c)
 {
   int loop;
-  double integral, too_high, too_high, test;
+  double integral, too_low, too_high, test;
 
   /* Integrates the binomial distribution with
    * parameters k,N, and determines what is the upper edge of the
@@ -103,7 +100,7 @@ double
 search_lower(double high, int k, int N, double c)
 {
   int loop;
-  double integral, too_high, too_high, test;
+  double integral, too_low, too_high, test;
 
   /* Integrates the binomial distribution with
    * parameters k,N, and determines what is the lower edge of the
@@ -113,12 +110,11 @@ search_lower(double high, int k, int N, double c)
    * check to see if there is any solution by verifying that the integral down
    * to the minimum lower limit (0) is greater than c */
 
-  double integral = beta_ab(0.0, high, k, N);
+  integral = beta_ab(0.0, high, k, N);
   if (integral == c) return 0.0;      /* lucky -- this is the solution */
   if (integral < c) return -1.0;      /* no solution exists */
-  double too_low = 0.0;               /* lower edge estimate */
-  double too_high = high;
-  double test;
+  too_low = 0.0;               /* lower edge estimate */
+  too_high = high;
 
   /* use a bracket-and-bisect search
    * LM: looping 20 times might be not enough to get an accurate precision.
@@ -138,23 +134,23 @@ search_lower(double high, int k, int N, double c)
 
 
 double
-interval(double low)
+interval(double low, int k, int N, double conflevel)
 {
   double high;
   /* Return the length of the interval starting at low
-   * that contains CONFLEVEL of the x^GLOBAL_k*(1-x)^(GLOBAL_N-GLOBAL_k)
+   * that contains conflevel of the x^k*(1-x)^(N-k)
    * distribution.
    * If there is no sufficient interval starting at low, we return 2.0
    */
 
-  high = search_upper(low, GLOBAL_k, GLOBAL_N, CONFLEVEL);
+  high = search_upper(low, k, N, conflevel);
   if (high == -1.0) return 2.0; //  so that this won't be the shortest interval
   return (high - low);
 }
 
 
 double
-brent(double ax, double bx, double cx, double tol, double *xmin)
+brent(double ax, double bx, double cx, double tol, double *xmin, int k, int N, double conflevel)
 {
   int iter;
   double a,b,d=0.,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
@@ -175,7 +171,7 @@ brent(double ax, double bx, double cx, double tol, double *xmin)
   a=(ax < cx ? ax : cx);
   b=(ax > cx ? ax : cx);
   x=w=v=bx;
-  fw=fv=fx=interval(x);
+  fw=fv=fx=interval(x, k, N, conflevel);
   for (iter=1;iter<=kITMAX;iter++) {
     xm=0.5*(a+b);
     tol2=2.0*(tol1=tol*fabs(x)+kZEPS);
@@ -202,7 +198,7 @@ brent(double ax, double bx, double cx, double tol, double *xmin)
       d=kCGOLD*(e=(x >= xm ? a-x : b-x));
     }
     u=(fabs(d) >= tol1 ? x+d : x+MYSIGN(tol1,d));
-    fu=interval(u);
+    fu=interval(u, k, N, conflevel);
     if (fu <= fx) {
       if (u >= x) a=x; else b=x;
       v  = w;
