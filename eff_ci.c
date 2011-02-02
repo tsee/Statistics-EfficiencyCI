@@ -1,4 +1,5 @@
 #include "eff_ci.h"
+#include <stdio.h>
 #include <math.h>
 #include <eff_math_fun.h>
 
