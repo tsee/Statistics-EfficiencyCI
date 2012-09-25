@@ -4,12 +4,13 @@ use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
   efficiency_ci
+  log_gamma
 );
 our @EXPORT_TAGS = ('all' => \@EXPORT_OK);
 
@@ -45,9 +46,15 @@ which the simple calculation based on the Binomial PDF will for confidence
 levels above the equivalent of one sigma. It also does not suffer from the
 problem that the uncertainty vanishes at C<k=0> and C<k=N>.
 
+Beside the C<efficiency_ci> function, this module exposes the approximation to
+the logarithm of the Gamma function that it uses internally. It takes
+a floating point number as argument and returns the calculated C<log(Gamma(x))>.
+For negative integers, it returns C<undef>.
+
 =head2 EXPORTS
 
-This module will optionally export the C<efficiency_ci> function.
+This module will optionally export the C<efficiency_ci>
+and C<log_gamma> functions.
 
 =head1 SEE ALSO
 
