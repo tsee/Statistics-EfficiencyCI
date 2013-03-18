@@ -240,8 +240,8 @@ double beta_cf(double x, double a, double b)
     h*=del;
     if (fabs(del-1)<=eps) break;
   }
-  if (m>itmax) {
-    printf("beta_cf", "a or b too big, or itmax too small, a=%g, b=%g, x=%g, h=%g, itmax=%d",
+  if (m > itmax) {
+    printf("beta_cf: a or b too big, or itmax too small, a=%g, b=%g, x=%g, h=%g, itmax=%d",
         a,b,x,h,itmax);
   }
   return h;
