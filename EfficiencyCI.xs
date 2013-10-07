@@ -38,3 +38,9 @@ log_gamma(x)
       XSRETURN(1);
     }
 
+double beta_ab(double a, double b, int k, int N)
+
+double ibetai(double a, double b, double x)
+
+double beta_cf(double x, double a, double b)
+
