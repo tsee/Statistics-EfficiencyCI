@@ -1,5 +1,8 @@
 Revision history for Perl extension Statistics::EfficiencyCI.
 
+0.05  Mon Oct 07 15:00 2013
+  - Expose beta_ab, beta_cf, ibetai to Perl.
+
 0.04  Tue Sep 25 08:00 2012
   - Expose log_gamma to Perl.
 
