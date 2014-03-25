@@ -4,7 +4,7 @@ use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 require Exporter;
 our @ISA = qw(Exporter);
@@ -75,7 +75,7 @@ and its implementation is Marc Paterno.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2011-2013 by Steffen Mueller
+Copyright (C) 2011-2014 by Steffen Mueller
 
 Most of the code is taken from the ROOT library (licensed under LGPL) and
 by proxy, the CEPHES library (licensed with a modified BSD license). The full list
