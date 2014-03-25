@@ -11,10 +11,18 @@
  * Andy Haas (haas@fnal.gov)
  * University of Washington
  *
- * Method and code directly taken from:
+ * Method and code taken from:
  * Marc Paterno (paterno@fnal.gov)
  * FNAL/CD
+ * and modified for this use case.
  */
+
+double brent(pTHX_ double ax, double bx, double cx, double tol, double *xmin, int k, int N, double conflevel);
+
+double search_upper(pTHX_ double low, int k, int N, double c);
+double search_lower(pTHX_ double high, int k, int N, double c);
+
+double interval(pTHX_ double low, int k, int N, double conflevel);
 
 
 #define MYSIGN(a,b) ((b >= 0) ? fabs(a) : -fabs(a))
@@ -31,7 +39,7 @@
  * Author: Marc Paterno
  */
 void
-efficiency_ci(int k, int N, double conflevel, double* mode, double* low, double* high)
+efficiency_ci(pTHX_ int k, int N, double conflevel, double* mode, double* low, double* high)
 {
   /* If there are no entries, then we know nothing, thus return the prior... */
   if (0==N) {
@@ -46,13 +54,13 @@ efficiency_ci(int k, int N, double conflevel, double* mode, double* low, double*
 
   if (k == 0) {
     *low = 0.0;
-    *high = search_upper(*low, k, N, conflevel);
+    *high = search_upper(aTHX_ *low, k, N, conflevel);
   } else if (k == N) {
     *high = 1.0;
-    *low = search_lower(*high, k, N, conflevel);
+    *low = search_lower(aTHX_ *high, k, N, conflevel);
   } else {
-    brent(0.0, 0.5, 1.0, 1.0e-9, low, k, N, conflevel);
-    *high = *low + interval(*low, k, N, conflevel);
+    brent(aTHX_ 0.0, 0.5, 1.0, 1.0e-9, low, k, N, conflevel);
+    *high = *low + interval(aTHX_ *low, k, N, conflevel);
   }
 
   return;
@@ -61,7 +69,7 @@ efficiency_ci(int k, int N, double conflevel, double* mode, double* low, double*
 
 
 double
-search_upper(double low, int k, int N, double c)
+search_upper(pTHX_ double low, int k, int N, double c)
 {
   int loop;
   double integral, too_low, too_high, test;
@@ -75,7 +83,7 @@ search_upper(double low, int k, int N, double c)
    * to the maximum upper limit (1) is greater than c
    */
 
-  integral = beta_ab(low, 1.0, k, N);
+  integral = beta_ab(aTHX_ low, 1.0, k, N);
   if (integral == c) return 1.0;    /* lucky -- this is the solution */
   if (integral < c) return -1.0;    /* no solution exists */
   too_high = 1.0;            /* upper edge estimate */
@@ -89,7 +97,7 @@ search_upper(double low, int k, int N, double c)
 
   for (loop=0; loop<50; loop++) {
     test = 0.5*(too_low + too_high);
-    integral = beta_ab(low, test, k, N);
+    integral = beta_ab(aTHX_ low, test, k, N);
     if (integral > c)  too_high = test;
     else too_low = test;
     if (fabs(integral - c) <= 1.E-15) break;
@@ -98,7 +106,7 @@ search_upper(double low, int k, int N, double c)
 }
 
 double
-search_lower(double high, int k, int N, double c)
+search_lower(pTHX_ double high, int k, int N, double c)
 {
   int loop;
   double integral, too_low, too_high, test;
@@ -111,7 +119,7 @@ search_lower(double high, int k, int N, double c)
    * check to see if there is any solution by verifying that the integral down
    * to the minimum lower limit (0) is greater than c */
 
-  integral = beta_ab(0.0, high, k, N);
+  integral = beta_ab(aTHX_ 0.0, high, k, N);
   if (integral == c) return 0.0;      /* lucky -- this is the solution */
   if (integral < c) return -1.0;      /* no solution exists */
   too_low = 0.0;               /* lower edge estimate */
@@ -125,7 +133,7 @@ search_lower(double high, int k, int N, double c)
 
   for (loop=0; loop<50; loop++) {
     test = 0.5*(too_high + too_low);
-    integral = beta_ab(test, high, k, N);
+    integral = beta_ab(aTHX_ test, high, k, N);
     if (integral > c)  too_low = test;
     else too_high = test;
     if (fabs(integral - c) <= 1.E-15) break;
@@ -135,7 +143,7 @@ search_lower(double high, int k, int N, double c)
 
 
 double
-interval(double low, int k, int N, double conflevel)
+interval(pTHX_ double low, int k, int N, double conflevel)
 {
   double high;
   /* Return the length of the interval starting at low
@@ -144,14 +152,14 @@ interval(double low, int k, int N, double conflevel)
    * If there is no sufficient interval starting at low, we return 2.0
    */
 
-  high = search_upper(low, k, N, conflevel);
+  high = search_upper(aTHX_ low, k, N, conflevel);
   if (high == -1.0) return 2.0; //  so that this won't be the shortest interval
   return (high - low);
 }
 
 
 double
-brent(double ax, double bx, double cx, double tol, double *xmin, int k, int N, double conflevel)
+brent(pTHX_ double ax, double bx, double cx, double tol, double *xmin, int k, int N, double conflevel)
 {
   int iter;
   double a,b,d=0.,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
@@ -172,7 +180,7 @@ brent(double ax, double bx, double cx, double tol, double *xmin, int k, int N, d
   a=(ax < cx ? ax : cx);
   b=(ax > cx ? ax : cx);
   x=w=v=bx;
-  fw=fv=fx=interval(x, k, N, conflevel);
+  fw=fv=fx=interval(aTHX_ x, k, N, conflevel);
   for (iter=1;iter<=kITMAX;iter++) {
     xm=0.5*(a+b);
     tol2=2.0*(tol1=tol*fabs(x)+kZEPS);
@@ -199,7 +207,7 @@ brent(double ax, double bx, double cx, double tol, double *xmin, int k, int N, d
       d=kCGOLD*(e=(x >= xm ? a-x : b-x));
     }
     u=(fabs(d) >= tol1 ? x+d : x+MYSIGN(tol1,d));
-    fu=interval(u, k, N, conflevel);
+    fu=interval(aTHX_ u, k, N, conflevel);
     if (fu <= fx) {
       if (u >= x) a=x; else b=x;
       v  = w;
@@ -221,7 +229,7 @@ brent(double ax, double bx, double cx, double tol, double *xmin, int k, int N, d
       }
     }
   }
-  printf("%s", "brent: Too many interations\n");
+  warn("%s", "brent: Too many interations\n");
   *xmin=x;
   return fx;
 }

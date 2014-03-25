@@ -38,6 +38,49 @@ static double C[6] = {
    -2.01889141433532773231E6
 };
 
+double polynomial_1eval(double x, double* a, unsigned int N);
+double polynomial_eval(double x, double* a, unsigned int N);
+
+/*
+ * calculates a value of a polynomial of the form:
+ * a[0]x^N+a[1]x^(N-1) + ... + a[N]
+*/
+double
+polynomial_eval(double x, double* a, unsigned int N)
+{
+  double pom;
+  unsigned int i;
+  if (N==0)
+    return a[0];
+  else {
+    pom = a[0];
+    for (i=1; i <= N; i++)
+      pom = pom *x + a[i];
+    return pom;
+  }
+}
+
+/*
+ * calculates a value of a polynomial of the form:
+ * x^N+a[0]x^(N-1) + ... + a[N-1]
+*/
+double
+polynomial_1eval(double x, double* a, unsigned int N)
+{
+  double pom;
+  unsigned int i;
+  if (N==0)
+    return a[0];
+  else {
+    pom = x + a[0];
+    for (i=1; i < N; i++)
+      pom = pom *x + a[i];
+    return pom;
+  }
+}
+
+
+
 double
 log_gamma(double x)
 {
@@ -126,47 +169,8 @@ log_gamma(double x)
 }
 
 
-/*
- * calculates a value of a polynomial of the form:
- * a[0]x^N+a[1]x^(N-1) + ... + a[N]
-*/
 double
-polynomial_eval(double x, double* a, unsigned int N)
-{
-  double pom;
-  unsigned int i;
-  if (N==0)
-    return a[0];
-  else {
-    pom = a[0];
-    for (i=1; i <= N; i++)
-      pom = pom *x + a[i];
-    return pom;
-  }
-}
-
-/*
- * calculates a value of a polynomial of the form:
- * x^N+a[0]x^(N-1) + ... + a[N-1]
-*/
-double
-polynomial_1eval(double x, double* a, unsigned int N)
-{
-  double pom;
-  unsigned int i;
-  if (N==0)
-    return a[0];
-  else {
-    pom = x + a[0];
-    for (i=1; i < N; i++)
-      pom = pom *x + a[i];
-    return pom;
-  }
-}
-
-
-double
-beta_ab(double a, double b, int k, int N)
+beta_ab(pTHX_ double a, double b, int k, int N)
 {
   int c1, c2;
   /* Calculates the fraction of the area under the
@@ -175,18 +179,18 @@ beta_ab(double a, double b, int k, int N)
   if (a == b) return 0;    /* don't bother integrating over zero range */
   c1 = k+1;
   c2 = N-k+1;
-  return ibetai(c1,c2,b)-ibetai(c1,c2,a);
+  return ibetai(aTHX_ c1,c2,b)-ibetai(aTHX_ c1,c2,a);
 }
 
 double
-ibetai(double a, double b, double x)
+ibetai(pTHX_ double a, double b, double x)
 {
   /* Calculates the incomplete beta function  I_x(a,b); this is
    * the incomplete beta function divided by the complete beta function */
 
   double bt;
   if (x < 0.0 || x > 1.0) {
-    printf("ibetai: Illegal x in routine ibetai: x = %g",x);
+    warn("ibetai: Illegal x in routine ibetai: x = %g",x);
     return 0;
   }
   if (x == 0.0 || x == 1.0)
@@ -195,13 +199,13 @@ ibetai(double a, double b, double x)
     bt=exp(log_gamma(a+b)-log_gamma(a)-log_gamma(b)+a*log(x)+b*log(1.0-x));
 
   if (x < (a+1.0)/(a+b+2.0))
-    return bt*beta_cf(x,a,b)/a;
+    return bt*beta_cf(aTHX_ x,a,b)/a;
   else
-    return 1.0-bt*beta_cf(1-x,b,a)/b;
+    return 1.0-bt*beta_cf(aTHX_ 1-x,b,a)/b;
 }
 
 
-double beta_cf(double x, double a, double b)
+double beta_cf(pTHX_ double x, double a, double b)
 {
   /* Continued fraction evaluation by modified Lentz's method
    * used in calculation of incomplete Beta function. */
@@ -241,7 +245,7 @@ double beta_cf(double x, double a, double b)
     if (fabs(del-1)<=eps) break;
   }
   if (m > itmax) {
-    printf("beta_cf: a or b too big, or itmax too small, a=%g, b=%g, x=%g, h=%g, itmax=%d",
+    warn("beta_cf: a or b too big, or itmax too small, a=%g, b=%g, x=%g, h=%g, itmax=%d",
         a,b,x,h,itmax);
   }
   return h;
