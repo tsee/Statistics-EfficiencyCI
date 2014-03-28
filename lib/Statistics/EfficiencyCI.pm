@@ -4,7 +4,7 @@ use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 require Exporter;
 our @ISA = qw(Exporter);
@@ -58,6 +58,13 @@ For negative integers, it returns C<undef>.
 
 This module will optionally export the C<efficiency_ci>
 and C<log_gamma> functions.
+
+=head2 EXCEPTIONS
+
+By default, the module's functions warn if there's something wrong
+(max iterations reached, etc). Set the global variable
+C<$Statistics::EfficiencyCI::Exceptions> to a true value (hopefully
+using C<local>) to upgrade the warnings to exceptions.
 
 =head1 SEE ALSO
 

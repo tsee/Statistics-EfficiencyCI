@@ -1,5 +1,9 @@
 Revision history for Perl extension Statistics::EfficiencyCI.
 
+0.07  Fri Mar 28 10:52 2014
+  - Option to upgrade warnings to exceptions.
+  - Less eager to warn.
+
 0.06  Tue Mar 25 10:52 2014
   - Replace some printf use in C code with Perl warn() for
     saner debugging.
