@@ -229,9 +229,24 @@ brent(pTHX_ double ax, double bx, double cx, double tol, double *xmin, int k, in
       }
     }
   }
-  warn("%s", "brent: Too many interations\n");
+
+  {
+    const char *err = "brent: Too many interations\n";
+    if (use_exceptions(aTHX))
+      croak("%s", err);
+    else
+      warn("%s", err);
+  }
+
   *xmin=x;
   return fx;
+}
+
+int
+use_exceptions(pTHX)
+{
+  SV *flag_sv = get_sv("Statistics::EfficiencyCI::Exceptions", 0);
+  return( (flag_sv && SvTRUE(flag_sv)) ? 1 : 0 );
 }
 
 #undef MYSIGN

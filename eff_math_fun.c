@@ -2,6 +2,12 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "eff_ci.h"
+
+#ifndef DEBUG
+# define DEBUG 0
+#endif
+
 #define MY_kDBL_MAX (1.79769e+308)
 #define MY_kMAXLGM (2.556348e305)
 #define MY_kLS2PI (0.91893853320467274178)
@@ -190,7 +196,11 @@ ibetai(pTHX_ double a, double b, double x)
 
   double bt;
   if (x < 0.0 || x > 1.0) {
-    warn("ibetai: Illegal x in routine ibetai: x = %g",x);
+    const char *err = "ibetai: Illegal x in routine ibetai: x = %g";
+    if (use_exceptions(aTHX))
+      croak(err, x);
+    else
+      warn(err, x);
     return 0;
   }
   if (x == 0.0 || x == 1.0)
@@ -210,7 +220,7 @@ double beta_cf(pTHX_ double x, double a, double b)
   /* Continued fraction evaluation by modified Lentz's method
    * used in calculation of incomplete Beta function. */
 
-  const int itmax = 500;
+  const int itmax = 5000;
   const double eps = 3.e-14;
   const double fpmin = 1.e-30;
 
@@ -254,9 +264,12 @@ double beta_cf(pTHX_ double x, double a, double b)
       break;
   }
 
-  if (m > itmax) {
-    warn("beta_cf: a or b too big, or itmax too small, a=%g, b=%g, x=%g, h=%g, itmax=%d",
-        a,b,x,h,itmax);
+  if (DEBUG && m > itmax) {
+    const char *err = "beta_cf: a or b too big, or itmax too small, a=%g, b=%g, x=%g, h=%g, itmax=%d";
+    if (use_exceptions(aTHX))
+      croak(err, a,b,x,h,itmax);
+    else
+      warn(err, a,b,x,h,itmax);
   }
   return h;
 }
