@@ -217,33 +217,43 @@ double beta_cf(pTHX_ double x, double a, double b)
   int m, m2;
   double aa, c, d, del, qab, qam, qap;
   double h;
+
   qab = a+b;
   qap = a+1.0;
   qam = a-1.0;
   c = 1.0;
   d = 1.0 - qab*x/qap;
-  if (fabs(d)<fpmin) d=fpmin;
-  d=1.0/d;
-  h=d;
-  for (m=1; m<=itmax; m++) {
-    m2=m*2;
-    aa = m*(b-m)*x/((qam+ m2)*(a+m2));
-    d = 1.0 +aa*d;
-    if(fabs(d)<fpmin) d = fpmin;
-    c = 1 +aa/c;
-    if (fabs(c)<fpmin) c = fpmin;
-    d=1.0/d;
-    h*=d*c;
-    aa = -(a+m)*(qab +m)*x/((a+m2)*(qap+m2));
-    d=1.0+aa*d;
-    if(fabs(d)<fpmin) d = fpmin;
-    c = 1.0 +aa/c;
-    if (fabs(c)<fpmin) c = fpmin;
-    d=1.0/d;
+
+  if (fabs(d) < fpmin)
+    d = fpmin;
+
+  d = 1.0/d;
+  h = d;
+  for (m = 1; m <= itmax; m++) {
+    m2 = m * 2;
+    aa = m * (b-m) * x / ((qam + m2) * (a + m2));
+    d = 1.0 + aa * d;
+    if (fabs(d) < fpmin)
+      d = fpmin;
+    c = 1 + aa / c;
+    if (fabs(c) < fpmin)
+      c = fpmin;
+    d = 1.0/d;
+    h *= d*c;
+    aa = -(a+m) * (qab +m) * x / ((a+m2)*(qap+m2));
+    d = 1.0 + aa*d;
+    if (fabs(d) < fpmin)
+      d = fpmin;
+    c = 1.0 + aa/c;
+    if (fabs(c) < fpmin)
+      c = fpmin;
+    d = 1.0/d;
     del = d*c;
-    h*=del;
-    if (fabs(del-1)<=eps) break;
+    h *= del;
+    if (fabs(del-1) <= eps)
+      break;
   }
+
   if (m > itmax) {
     warn("beta_cf: a or b too big, or itmax too small, a=%g, b=%g, x=%g, h=%g, itmax=%d",
         a,b,x,h,itmax);
