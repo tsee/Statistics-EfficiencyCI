@@ -7,8 +7,9 @@
 #include <float.h>
 #include <math.h>
 #include "eff_math_fun.h"
+#include "eff_ci.h" /* for efficiency_ci() */
 
-MODULE = Statistics::EfficiencyCI		PACKAGE = Statistics::EfficiencyCI		
+MODULE = Statistics::EfficiencyCI		PACKAGE = Statistics::EfficiencyCI
 
 
 void
